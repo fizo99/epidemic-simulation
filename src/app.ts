@@ -2,38 +2,47 @@ import P5 from "p5";
 import "p5/lib/addons/p5.dom";
 import "./styles.scss";
 
-// DEMO: A sample class implementation
-import MyCircle from "./MyCircle";
 import Colors from "./Colors";
+import PersonContainer from "./PersonContainer";
+import WindowProperties from "./WindowProperties";
 
-// Creating the sketch itself
+const FRAME_RATE = 25;
+
 const sketch = (p5: P5) => {
-  // DEMO: Prepare an array of MyCircle instances
-  const myCircles: MyCircle[] = [];
+  const persons: PersonContainer = new PersonContainer(p5, 100);
+  new Colors(p5);
 
   // The sketch setup method
   p5.setup = () => {
-    new Colors(p5);
-    // Creating and positioning the canvas
-    const canvas = p5.createCanvas(200, 200);
-    canvas.parent("app");
-
-    // Configuring the canvas
-    p5.background("white");
-
-    // DEMO: Create three circles in the center of the canvas
-    for (let i = 1; i < 4; i++) {
-      const p = p5.width / 4;
-      const circlePos = p5.createVector(p * i, p5.height / 2);
-      const size = i % 2 !== 0 ? 24 : 32;
-      myCircles.push(new MyCircle(p5, circlePos, size));
-    }
+    let exampleObj = [
+      {
+        name: "Samuel",
+        age: 23
+      },
+      {
+        name: "Axel",
+        age: 15
+      }
+    ];
+    p5.save(exampleObj, "output_text.json");
+    p5.frameRate(FRAME_RATE);
+    const canvas = p5.createCanvas(
+      WindowProperties.WIDTH,
+      WindowProperties.HEIGHT
+    );
   };
 
   // The sketch draw method
   p5.draw = () => {
-    // DEMO: Let the circle instances draw themselves
-    myCircles.forEach((circle) => circle.draw());
+    p5.background(Colors.BACKGROUND_COLOR);
+    p5.fill(Colors.PERSON_COLOR);
+    persons.getPersons().forEach((person) => {
+      person.draw();
+      person.move();
+      if (person.isOutsideWindow()) {
+        persons.removePerson(person);
+      }
+    });
   };
 };
 
