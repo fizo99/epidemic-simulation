@@ -10,7 +10,6 @@ export default class PersonContainer {
     for (let i = 0; i < initPersonCount; i++) {
       this.persons.push(new Person(p5));
     }
-    console.log(this.persons.length);
   }
   getPersons() {
     return this.persons;

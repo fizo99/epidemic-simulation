@@ -5,39 +5,61 @@ import P5 from "p5";
 
 export default class Person {
   _p5: P5;
-  x: number;
-  y: number;
-  vector: Vector;
+  currentPosition: Vector;
+  nextPosition: Vector;
 
   personSize = 10;
 
   constructor(p5: P5) {
     this._p5 = p5;
-    this.x = p5.random(WindowProperties.WIDTH);
-    this.y = p5.random(WindowProperties.HEIGHT);
-    this.vector = new Vector2D(p5.random(-5, 5), p5.random(-5, 5));
+    this.currentPosition = new Vector2D(
+      Math.ceil(p5.random(WindowProperties.WIDTH)),
+      Math.ceil(p5.random(WindowProperties.HEIGHT))
+    );
+    this.nextPosition = this.newNextPosition();
   }
-  getX() {
-    return this.x;
-  }
-  getY() {
-    return this.y;
-  }
+
   draw() {
-    this._p5.circle(this.x, this.y, this.personSize);
+    const position = this.currentPosition.getComponents();
+    this._p5.circle(position[0], position[1], this.personSize);
   }
   move() {
-    const components = this.vector.getComponents();
-    this.x += components[0];
-    this.y += components[1];
-    this.vector = new Vector2D(this._p5.random(-5, 5), this._p5.random(-5, 5));
+    if (Vector2D.distance(this.currentPosition, this.nextPosition) < this.personSize) {
+      this.nextPosition = this.newNextPosition();
+    }
+    this.updateCurrentPosition();
+  }
+  updateCurrentPosition() {
+    const moveVector = this.newMoveVector();
+    this.currentPosition = new Vector2D(
+      Math.ceil(this.currentPosition.getComponents()[0] + moveVector.getComponents()[0]),
+      Math.ceil(this.currentPosition.getComponents()[1] + moveVector.getComponents()[1])
+    );
+  }
+  bounce() {
+    this.nextPosition = this.newNextPosition();
+  }
+  newNextPosition() {
+    return new Vector2D(
+      Math.ceil(this._p5.random(-WindowProperties.WIDTH * 2, WindowProperties.WIDTH * 2)),
+      Math.ceil(this._p5.random(-WindowProperties.HEIGHT * 2, WindowProperties.HEIGHT * 2))
+    );
+  }
+  newMoveVector() {
+    const currentPosition = this.currentPosition.getComponents();
+    const nextPosition = this.nextPosition.getComponents();
+    return new Vector2D(
+      nextPosition[0] - currentPosition[0] == 0 ? 0 : nextPosition[0] - currentPosition[0] < 0 ? -1 : 1,
+      nextPosition[1] - currentPosition[1] == 0 ? 0 : nextPosition[1] - currentPosition[1] < 0 ? -1 : 1
+    )
   }
   isOutsideWindow() {
+    const currentPosition = this.currentPosition.getComponents();
     return (
-      this.getX() < 0 ||
-      this.getX() > WindowProperties.WIDTH ||
-      this.getY() < 0 ||
-      this.getY() > WindowProperties.HEIGHT
+      currentPosition[0] < 0 + this.personSize / 2 ||
+      currentPosition[0] > WindowProperties.WIDTH - this.personSize / 2 ||
+      currentPosition[1] < 0 + this.personSize / 2 ||
+      currentPosition[1] > WindowProperties.HEIGHT - this.personSize / 2
     );
   }
 }
