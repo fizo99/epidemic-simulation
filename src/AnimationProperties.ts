@@ -1,0 +1,11 @@
+export const WIDTH = 300;
+export const HEIGHT = 300;
+export const PERSON_SIZE = 10;
+export const FRAME_RATE = 25;
+export const PERSONS_NUMBER = 100;
+export const HEALTHY_PERSON_COLOR = "black";
+export const WITH_SYMPTOMS_PERSON_COLOR = "red";
+export const WITHOUT_SYMPTOMS_PERSON_COLOR = "yellow";
+export const RESISTANT_PERSON_COLOR = "blue";
+export const TEXT_COLOR = "green";
+export const BACKGROUND_COLOR = "white";
