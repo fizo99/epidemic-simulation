@@ -9,7 +9,25 @@
 
 <body>
 	<script src="src/app.ts"></script>
-	<pre id="statistics"></pre>
+	<div id="buttons">
+		<button id="save">Save</button>
+		<button id="restore">Restore</button>
+		<input id="memento-number" type="number" />
+		<div id="mementos-info">mementos: <text id="mementos-count"></text></div>
+	</div>
+	<div id="info">
+		<div id="statistics">
+			<p id="infected"></p>
+			<p id="withSymptoms"></p>
+			<p id="withoutSymptoms"></p>
+			<p id="healthy"></p>
+			<p id="resistant"></p>
+			<h3 id="total"></h3>
+		</div>
+		<p id="time"></p>
+	</div>
+
+
 </body>
 
 </html>

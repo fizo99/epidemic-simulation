@@ -33,8 +33,8 @@ export default class Vulnerable implements State {
 
         if (isInfectedAround) {
             if (++this.timeAroundInfected == this.minTimeToGetInfected) {
-                console.log("CHANGED")
                 this.person.changeState(new Infected(this._p5, this.person));
+                console.log("IM INFECTED")
             }
         } else {
             this.timeAroundInfected = 0;

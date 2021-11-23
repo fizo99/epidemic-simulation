@@ -3,75 +3,97 @@ import "p5/lib/addons/p5.dom";
 import "./styles.scss";
 
 import PersonContainer from "./PersonContainer";
-import { WIDTH, HEIGHT, BACKGROUND_COLOR, FRAME_RATE } from "./AnimationProperties";
+import Person from "./Person";
+import {
+  WIDTH,
+  HEIGHT,
+  BACKGROUND_COLOR,
+  FRAME_RATE,
+  ONE_FRAME_DURATION,
+  INIT_HEALTHY_PERSONS_NUMBER,
+  INIT_INFECTED_PERSONS_NUMBER
+} from "./AnimationProperties";
 import Healthy from "./states/Healthy";
 import Infected from "./states/Infected";
 import WithoutSymptoms from "./states/WithoutSymptoms";
 import Resistant from "./states/Resistant";
 import Vulnerable from "./states/Vulnerable";
-
-const PERSONS_NUMBER = 200;
-let time = 0.0;
-
-
+import Memento from "./Memento";
+import CareTaker from "./CareTaker";
 
 const sketch = (p5: P5) => {
-  const persons: PersonContainer = new PersonContainer(p5, PERSONS_NUMBER);
+  const careTaker = new CareTaker();
+  const persons = new PersonContainer(p5, INIT_HEALTHY_PERSONS_NUMBER, INIT_INFECTED_PERSONS_NUMBER);
+  let time = 0.0;
 
   // The sketch setup method
   p5.setup = () => {
     p5.frameRate(FRAME_RATE);
     const canvas = p5.createCanvas(WIDTH, HEIGHT);
+    setupButtonsListeners();
   };
 
   // The sketch draw method
   p5.draw = () => {
     p5.background(BACKGROUND_COLOR);
-    p5.text(time.toFixed(2), 10, 10)
     persons.getPersons().forEach((person) => {
       person.draw();
       person.move();
-      if (person.isOutsideWindow()) {
-        // if (p5.random() > 0.5) persons.removePerson(person);
-        // else person.bounce();
-        person.bounce();
-      }
+      handlePersonOutsideWindow(person);
       person.updateState(persons)
     });
-    time += 0.04
-    showStatistics(persons)
+    updateTime();
+    displayTime();
+    displayStatistics(persons.getStatistics())
   };
 
-};
-
-function showStatistics(personContainer: PersonContainer) {
-  const statistics = {
-    infected: 0,
-    withSymptoms: 0,
-    withoutSymptoms: 0,
-    healthy: 0,
-    resistant: 0,
-    vulnerable: 0
-  }
-  const persons = personContainer.getPersons();
-  persons.forEach(person => {
-    if (person.state instanceof Vulnerable) {
-      statistics.vulnerable++;
-      if (person.state.state instanceof Healthy) statistics.healthy++;
-
-    } else if (person.state instanceof Infected) {
-      statistics.infected++;
-      if (person.state.state instanceof WithoutSymptoms) statistics.withoutSymptoms++
-      else statistics.withSymptoms++;
-    } else {
-      statistics.resistant++;
+  function handlePersonOutsideWindow(person: Person) {
+    if (person.isOutsideWindow()) {
+      if (p5.random() > 0.5) {
+        persons.removePerson(person);
+        persons.spawnNewPerson();
+      } else {
+        person.bounce();
+      }
     }
-  })
-  document.getElementById("statistics").innerHTML = JSON.stringify(statistics, null, "\t")
-    .split("{").join("")
-    .split("}").join("")
-    .split("\"").join("")
-    .split(",").join("<br>")
-}
+  }
+  function updateTime() {
+    time += ONE_FRAME_DURATION;
+  }
+  function displayTime() {
+    document.getElementById("time").innerHTML = time.toFixed(2) + "s"
+  }
+  function displayStatistics({
+    infected,
+    withSymptoms,
+    withoutSymptoms,
+    healthy,
+    resistant,
+    total
+  }) {
+    document.getElementById("infected").innerHTML = "infected: " + infected
+    document.getElementById("withSymptoms").innerHTML = "with symptoms: " + withSymptoms
+    document.getElementById("withoutSymptoms").innerHTML = "without symptoms: " + withoutSymptoms
+    document.getElementById("healthy").innerHTML = "healthy: " + healthy
+    document.getElementById("resistant").innerHTML = "resistant: " + resistant
+    document.getElementById("total").innerHTML = "Total: " + total;
+  }
+  function setupButtonsListeners() {
+    document.getElementById("save").addEventListener('click', () => {
+      careTaker.create(persons.getPersons(), time);
+      document.getElementById("mementos-count").innerHTML = careTaker.mementos.length.toString();
+    })
+    document.getElementById("restore").addEventListener('click', () => {
+      const mementoNumber = parseInt((<HTMLInputElement>document.getElementById("memento-number")).value) - 1;
+      if (careTaker.mementos.length <= mementoNumber) {
+        alert("Wrong memento number");
+        return;
+      }
+      const mementoState = careTaker.restore(mementoNumber);
+      persons.setPersons(mementoState.persons);
+      time = mementoState.time;
+    })
+  }
+};
 
 new P5(sketch);
